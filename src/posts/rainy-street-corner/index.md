@@ -1,6 +1,6 @@
 ---
 title: "雨后的街角"
-image: "https://api.yppp.net/pc.php"
+image: ""
 published: 2026-05-06T11:00:00
 pinned: false
 description: "雨停之后，街角重新亮起来。"
