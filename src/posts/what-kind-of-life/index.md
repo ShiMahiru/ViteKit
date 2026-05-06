@@ -1,6 +1,6 @@
 ---
 title: "你想活出什么样的人生？"
-image: "https://api.yppp.net/pc.php"
+image: ""
 published: 2026-05-06T09:00:00
 pinned: false
 description: "关于选择、节奏和自我要求的一点思考。"
