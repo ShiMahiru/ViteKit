@@ -1,6 +1,6 @@
 ---
 title: "一杯热茶的下午"
-image: "https://api.yppp.net/pc.php"
+image: ""
 published: 2026-05-06T12:00:00
 pinned: false
 description: "在普通下午里，给自己留一点安静。"
