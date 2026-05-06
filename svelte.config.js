@@ -1,0 +1,67 @@
+import adapter from '@sveltejs/adapter-static';
+import { mdsvex } from 'mdsvex';
+import remarkAvifRewrite from './vite-plugins/remark-avif-rewrite.js';
+import remarkGithubAlerts from './vite-plugins/remark-github-alerts.js';
+import rehypeExternalLinks from './vite-plugins/rehype-external-links.js';
+
+const mdsvexConfig = {
+	extensions: ['.md'],
+	smartypants: {
+		dashes: 'oldschool'
+	},
+	remarkPlugins: [remarkGithubAlerts, remarkAvifRewrite],
+	rehypePlugins: [rehypeExternalLinks]
+};
+
+/** @type {import('@sveltejs/kit').Config} */
+const config = {
+	extensions: ['.svelte', '.md'],
+	preprocess: [mdsvex(mdsvexConfig)],
+	compilerOptions: {
+		// Force runes mode for the project, except for libraries. Can be removed in svelte 6.
+		runes: ({ filename }) => (filename.split(/[/\\]/).includes('node_modules') ? undefined : true)
+	},
+	onwarn: (warning, handler) => {
+		// 忽略 a11y 警告
+		if (warning.code.startsWith('a11y_')) return;
+		// 忽略 context="module" 废弃警告（来自 markdown 文件中的代码示例）
+		if (warning.code === 'script_context_deprecated') return;
+		handler(warning);
+	},
+	kit: {
+		// adapter-auto only supports some environments, see https://svelte.dev/docs/kit/adapter-auto for a list.
+		// If your environment is not supported, or you settled on a specific environment, switch out the adapter.
+		// See https://svelte.dev/docs/kit/adapters for more information about adapters.
+		adapter: adapter({
+			fallback: '404.html',
+			strict: false
+		}),
+		prerender: {
+			entries: ['*', '/robots.txt'],
+			handleHttpError: ({ path, referrer, message }) => {
+				// .avif 在 vite build 之后由 post-images.js 生成，prerender 阶段必然 404，静默
+				if (path.endsWith('.avif')) return;
+				console.warn(`[prerender] HTTP error at ${path} (from ${referrer}): ${message}`);
+			},
+			handleMissingId: ({ path, id, referrers }) => {
+				console.warn(`[prerender] missing id "${id}" at ${path} (from ${referrers.join(', ')})`);
+			},
+			handleEntryGeneratorMismatch: ({ entry, generatedFromId, matchedId }) => {
+				console.warn(`[prerender] entry mismatch: ${entry} (from ${generatedFromId}, matched ${matchedId})`);
+			},
+			handleUnseenRoutes: ({ routes }) => {
+				const unexpectedRoutes = routes.filter((route) => route !== '/posts/[slug]');
+				if (unexpectedRoutes.length > 0) {
+					throw new Error(
+						`[prerender] unseen routes: ${unexpectedRoutes.map((route) => `\n  - ${route}`).join('')}`
+					);
+				}
+			}
+		},
+		paths: {
+			base: process.env.NODE_ENV === 'production' ? '' : ''
+		}
+	}
+};
+
+export default config;
