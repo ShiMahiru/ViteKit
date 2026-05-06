@@ -1,6 +1,6 @@
 ---
 title: "把小事做好"
-image: "https://api.yppp.net/pc.php"
+image: ""
 published: 2026-05-06T13:00:00
 pinned: false
 description: "真正稳定的生活，常常从小事开始。"
